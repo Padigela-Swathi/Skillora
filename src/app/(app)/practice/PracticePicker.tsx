@@ -10,9 +10,10 @@ import { LEVELS, QUESTION_COUNT, type Level, type Round } from "@shared/config";
 
 type Dur = 5 | 10 | 15;
 
-export function PracticePicker({ firstName, remaining, limit, initial, last }: {
+export function PracticePicker({ firstName, remaining, limit, initial, last, pending }: {
   firstName: string; remaining: number; limit: number; initial: { round: Round; level: Level; dur: Dur };
   last: { id: string; roundName: string; score: number; date: string } | null;
+  pending: { id: string; roundName: string; status: "in_progress" | "processing" } | null;
 }) {
   const router = useRouter();
   const [round, setRound] = useState<Round>(initial.round);
@@ -32,6 +33,15 @@ export function PracticePicker({ firstName, remaining, limit, initial, last }: {
           <Icon name="timer" size={18} /><span><strong>{remaining} of {limit}</strong> interviews left today</span>
         </div>
       </div>
+
+      {pending && (
+        <Banner tone="tip" role="status" className="flex flex-wrap items-center justify-between gap-3">
+          <span>{pending.status === "processing" ? `Your ${pending.roundName} feedback has not been prepared yet.` : `You have a ${pending.roundName} in progress.`}</span>
+          <Link href={pending.status === "processing" ? `/interview/${pending.id}/processing` : `/interview/${pending.id}`} className="font-semibold underline">
+            {pending.status === "processing" ? "Get my feedback" : "Resume interview"}
+          </Link>
+        </Banner>
+      )}
 
       <section className="flex flex-col gap-3" aria-labelledby="h-round">
         <h2 id="h-round" className="text-lg font-semibold">1. Choose a round</h2>

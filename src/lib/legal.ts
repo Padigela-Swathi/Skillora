@@ -21,6 +21,7 @@ export function privacySections(): LegalSection[] {
     { h: "2. Camera", b: "Your camera is shown only on your screen. We do not record or store any video." },
     { h: "3. Microphone", b: "Your spoken answers are converted to text to create feedback. We keep the transcript and feedback, not the audio." },
     { h: "4. Your control", b: "You can edit your profile any time and delete your account and all data from Settings." },
-    { h: "5. Contact", b: CONTACT_EMAIL ? `Questions about privacy? Write to ${CONTACT_EMAIL}.` : "Questions about privacy? Use the contact address published on our website." },
+    { h: "5. Services we use", b: "To make questions and feedback, your answers and code are processed by NVIDIA's AI service. To compile and run your code we use free public code-running services. Voice to text uses your browser's speech recognition: in Chrome this sends your audio to Google, and we never receive or keep that audio." },
+    { h: "6. Contact", b: CONTACT_EMAIL ? `Questions about privacy? Write to ${CONTACT_EMAIL}.` : "Questions about privacy? Use the contact address published on our website." },
   ];
 }

@@ -49,7 +49,7 @@ export function AppShell({ name, children }: { name: string; children: ReactNode
                 className={cx("inline-flex h-11 items-center rounded-[10px] px-4 text-[15px] font-semibold", active(n.href) ? "bg-teal-100 text-teal-900" : "text-ink-2 hover:bg-neutral-100")}>{n.label}</Link>
             ))}
           </nav>
-          <Link href="/settings" aria-label="Your profile" className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-600 text-[15px] font-bold text-white">{initials(name)}</Link>
+          <Link href="/settings" aria-label={`Your profile, ${initials(name)}`} className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-600 text-[15px] font-bold text-white">{initials(name)}</Link>
         </div>
       </header>
       <div className="flex-1">{children}</div>

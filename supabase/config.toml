@@ -1,0 +1,11 @@
+# Used by the Supabase CLI (`supabase link --project-ref <ref>` then `supabase db push` / `supabase functions deploy`).
+project_id = "kqqkowftmlysomzlzzta"
+
+[functions.start-interview]
+verify_jwt = true
+[functions.run-code]
+verify_jwt = true
+[functions.evaluate-interview]
+verify_jwt = true
+[functions.delete-account]
+verify_jwt = true

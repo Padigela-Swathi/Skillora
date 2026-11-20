@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { IDS, login, noConsoleErrors, alertOf, go } from "./helpers";
+import { IDS, login, noConsoleErrors, alertOf, go, userJwt } from "./helpers";
 
-const shot = (page: import("@playwright/test").Page, project: string, name: string) => page.screenshot({ path: `test-results/shots/${project}-${name}.png`, fullPage: true });
+const shot = (page: import("@playwright/test").Page, project: string, name: string) => page.screenshot({ path: `e2e-shots/${project}-${name}.png`, fullPage: true });
 const noHScroll = async (page: import("@playwright/test").Page) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 // rating-due fixtures: the 1st (…0010) and 6th (…0015) completed interviews
@@ -15,6 +15,7 @@ test("practice -> device check -> tips (real selection flows through the URL)", 
   await go(page, "/practice");
   await expect(page.getByRole("heading", { name: "Hi Bhavya, ready to practise?" })).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "interviews left today" })).toContainText(/\d of 3/);
+  await expect(page.getByRole("link", { name: "Resume interview" })).toBeVisible();   // B has live interviews in progress
   await shot(page, p, "06-practice");
   await page.getByRole("radio", { name: /Technical Round/ }).click();
   await page.getByRole("radio", { name: "Hard" }).click();
@@ -33,6 +34,7 @@ test("practice -> device check -> tips (real selection flows through the URL)", 
   await page.getByRole("button", { name: "Allow camera and microphone" }).click();
   await expect(page.getByText("Self view")).toBeVisible();
   await expect(cont).toBeEnabled();
+  await expect(cont).toHaveCSS("background-color", "rgb(51, 92, 103)");   // transition finished (deep teal)
   await expect(page.getByLabel("Camera", { exact: true })).toBeEnabled();
   await expect(page.getByLabel("Microphone", { exact: true })).toBeEnabled();
   await shot(page, p, "07-device-check-allowed");
@@ -100,10 +102,18 @@ test("feedback: ended-early pill and not-found for foreign/invalid ids", async (
   expect(res?.status()).toBe(404);
 });
 
-test("feedback rating: shown after the 1st/6th interview, stored once, then hidden", async ({ page }, info) => {
+test("feedback rating: shown after the 1st/6th interview, stored once, then hidden", async ({ page, request, baseURL }, info) => {
   const id = RATING_ID(info.project.name);
   await go(page, `/feedback/${id}`);
-  await expect(page.getByText("How useful was this feedback?")).toBeVisible();
+  const card = page.getByText("How useful was this feedback?");
+  if (!(await card.isVisible())) {
+    // Already rated in an earlier run against this database: prove the rating is really persisted, and that the card stays hidden.
+    const jwt = await userJwt("b", baseURL!);
+    const r = await request.get(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/feedback_ratings?interview_id=eq.${id}&select=stars,comment`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${jwt}` } });
+    expect((await r.json()).length).toBe(1);
+    info.annotations.push({ type: "note", description: "rating already stored by a previous run; verified persisted via API" });
+    return;
+  }
   await shot(page, info.project.name, "13-feedback-rating");
   await page.getByRole("button", { name: "Send rating" }).click();
   await expect(alertOf(page)).toContainText("Choose 1 to 5 stars");

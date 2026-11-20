@@ -165,7 +165,7 @@ export class WandboxRunner implements Runner {
       res = await fetchWithTimeout(this.f, `${this.baseUrl}/api/compile.json`, {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ compiler: WANDBOX[req.language], code, stdin: req.stdin }),
-      }, 12000);
+      }, req.language === "java" ? 30000 : 15000);   // javac on Wandbox needs longer than interpreted/other compiled languages
     } catch (e) {
       if (e instanceof RunnerError && e.message === "network: timeout") {
         return { status: "timeout", stdout: "", stderr: "Time limit exceeded", compileOutput: "", timeMs: Date.now() - started, provider: this.name };

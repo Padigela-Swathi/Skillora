@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { login, noConsoleErrors, alertOf, go } from "./helpers";
+import { login, noConsoleErrors, alertOf, go, scanA11y } from "./helpers";
 
 const LIVE = (p: string) => (p === "mobile" ? "aaaaaaaa-0000-4000-8000-000000000101" : "aaaaaaaa-0000-4000-8000-000000000001");
 const QUIT = (p: string) => (p === "mobile" ? "aaaaaaaa-0000-4000-8000-000000000301" : "aaaaaaaa-0000-4000-8000-000000000201");
-const shot = (page: Page, p: string, name: string) => page.screenshot({ path: `test-results/shots/${p}-${name}.png`, fullPage: true });
+const shot = (page: Page, p: string, name: string) => page.screenshot({ path: `e2e-shots/${p}-${name}.png`, fullPage: true });
 
 /** Speech recognition cannot run headless: switch to the typed-answer path (the same path real users get without a mic / in Firefox). */
 async function typeAnswer(page: Page, text: string) {
@@ -54,6 +54,7 @@ test("interview room: spoken Q1 -> answer, Q2 -> skip, Q3 coding: compile, run (
   const editor = page.getByLabel(/Your code/);
   await expect(editor).toHaveValue(/import sys/);                                   // starter code
   await shot(page, p, "10-coding-question");
+  await scanA11y(page, "interview (coding)");
 
   // compile error is reported, then success
   await editor.fill("def (:");
@@ -123,10 +124,23 @@ test("quit with zero answers: one click, no dialog, back to practice (interview 
   await expect(page).toHaveURL(/\/practice$/);
 });
 
-test("skipping every question opens 'Leave this interview?' and abandons it", async ({ page }) => {
-  // uses the already-abandoned fixture guard: a fresh interview is needed, so create one through the real flow only if AI is up
-  test.skip(true, "covered at DB level (finish_interview => abandoned) and by the quit test; needs a fresh live interview per run");
-  void page;
+const ALL_SKIP = (p: string) => (p === "mobile" ? "aaaaaaaa-0000-4000-8000-000000000501" : "aaaaaaaa-0000-4000-8000-000000000401");
+
+test("skipping every question opens 'Leave this interview?' and abandons it (not counted)", async ({ page }, info) => {
+  const p = info.project.name;
+  await go(page, `/interview/${ALL_SKIP(p)}`);
+  for (const n of [1, 2, 3]) {
+    await expect(page.getByText(`Question ${n} of 3`)).toBeVisible();
+    await page.getByRole("button", { name: "Skip" }).click();
+  }
+  const dialog = page.getByRole("dialog", { name: "Leave this interview?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("will not count towards today");
+  await shot(page, p, "11-leave-dialog");
+  await dialog.getByRole("button", { name: "Leave interview" }).click();
+  await expect(page).toHaveURL(/\/practice$/);
+  await go(page, `/interview/${ALL_SKIP(p)}`);          // abandoned: cannot be re-entered
+  await expect(page).toHaveURL(/\/practice$/);
 });
 
 test("another user's interview is not reachable (404) and anonymous is redirected", async ({ page, context, baseURL }) => {

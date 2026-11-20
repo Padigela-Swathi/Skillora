@@ -12,3 +12,4 @@ playwright-report/
 .DS_Store
 supabase/.temp/
 supabase/.branches/
+e2e-shots/

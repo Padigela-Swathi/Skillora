@@ -5,6 +5,7 @@ import { ROUND_INFO } from "@/lib/content";
 import { asStrings, band, fmtDate, isScoreMap } from "@/lib/format";
 import { SUB_SCORES, type Round } from "@shared/config";
 import { buttonClass } from "@/components/buttonStyles";
+import { Icon } from "@/components/Icon";
 import { Pill } from "@/components/ui";
 import { RatingCard } from "./RatingCard";
 import { ScoreRing } from "./ScoreRing";
@@ -108,7 +109,7 @@ export default async function FeedbackPage({ params }: { params: Promise<{ id: s
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <Link href={retry} className={buttonClass("primary", "lg", "max-md:flex-[1_1_100%]")}>Retry this round</Link>
+        <Link href={retry} className={buttonClass("primary", "lg", "max-md:flex-[1_1_100%]")}><Icon name="retry" size={20} />Retry this round</Link>
         <Link href="/practice" className={buttonClass("secondary", "lg", "max-md:flex-[1_1_100%]")}>Try another type</Link>
         <Link href="/history" className={buttonClass("ghost", "lg", "max-md:flex-[1_1_100%]")}>View history</Link>
       </div>

@@ -1,0 +1,37 @@
+# Deployment (Netlify + Supabase). Nothing here has been deployed by the build.
+
+## 0. Compatibility
+Next.js 16 (App Router, server components, `proxy.ts`) deploys on Netlify with its Next.js runtime (auto-detected; `netlify.toml` pins Node 22). All app server code uses only the public Supabase URL/key, so no server secrets are needed on Netlify. `next build` was run successfully for this repo (16 routes, no Edge-runtime-only APIs used).
+
+## 1. Supabase (one-time)
+1. **Migrations** – apply `supabase/migrations/*.sql` in order (`supabase link --project-ref <ref>` then `supabase db push`, or paste into the SQL editor). The dev project already has them.
+2. **Edge Functions** – deploy all four (each folder contains its `deno.json`; they share `supabase/functions/_shared`):
+   `supabase functions deploy start-interview run-code evaluate-interview delete-account` (JWT verification stays **on**).
+3. **Secrets** (Dashboard → Edge Functions → Secrets):
+   - `NVIDIA_API_KEY` *(required)* – key from build.nvidia.com. Free-tier rate limits apply.
+   - `NVIDIA_MODEL` / `NVIDIA_FALLBACK_MODEL` *(optional)* – defaults `google/gemma-4-31b-it` and `poolside/laguna-xs-2.1,stepfun-ai/step-5-preview,nvidia/nemotron-3.5-bolt-e4b`. NVIDIA retires models without notice: if AI calls start failing, list models (`GET https://integrate.api.nvidia.com/v1/models`) and update these two values; no redeploy is needed.
+   - `JUDGE0_URL`, `JUDGE0_AUTH_TOKEN` *(optional)* – your own Judge0 for higher limits/privacy.
+   - `ALLOWED_ORIGINS` *(recommended)* – e.g. `https://skillora.netlify.app`.
+4. **Google sign-in** – Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web). Authorised redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`. Put the client ID/secret into Supabase → Authentication → Providers → Google, enable it.
+5. **URL configuration** (Authentication → URL Configuration): Site URL = your Netlify URL; Redirect URLs: `https://<site>/auth/callback` and `http://localhost:3000/auth/callback`.
+6. **Hardening** – disable the Email provider's sign-ups (see SECURITY.md #1). Optionally enable CAPTCHA.
+7. **Legal** – set `NEXT_PUBLIC_CONTACT_EMAIL`, have the Terms/Privacy copy reviewed; when it changes, bump `TERMS_VERSION` in `supabase/functions/_shared/config.ts` **and redeploy `start-interview`** (it also checks the version) so users re-accept.
+
+## 2. Netlify
+Site settings → Environment variables:
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`. Build command `npm run build` (from `netlify.toml`). Connect the repo and deploy from `main`.
+
+## 3. Pre-flight checklist
+- [ ] `npm run check` (types, lint, unit) and `npm run build` pass
+- [ ] Sign in with a real Google account → terms → details → practice
+- [ ] Start a 5-minute HR interview → questions appear (proves `NVIDIA_API_KEY`)
+- [ ] Coding round: Compile and Run work (proves the sandbox path from your Supabase region)
+- [ ] Finish → feedback report arrives; rate it; History lists it
+- [ ] Settings → delete a test account removes it
+- [ ] Supabase Advisors show no new warnings; Email sign-ups disabled
+- [ ] Remove test data: `delete from auth.users where email like '%@skillora-test.invalid';` (and `%@skillora-dbtest.invalid`)
+
+## 4. Rollback
+- **Frontend**: Netlify → Deploys → "Publish deploy" on the previous build.
+- **Edge Functions**: redeploy the previous commit's function folders (the Dashboard keeps versions).
+- **Database**: migrations are additive; to undo a change write a new forward migration. Never reset a production database. Take a backup (Dashboard → Database → Backups) before applying schema changes.

@@ -14,7 +14,7 @@ test("landing page: hero, sections, CTA, legal links, responsive nav", async ({ 
   const how = page.getByRole("link", { name: "How it works", exact: true });
   if (info.project.name === "desktop") await expect(how).toBeVisible(); else await expect(how).toBeHidden();   // hidden on mobile per design
   await noHScroll(page);
-  await page.screenshot({ path: `test-results/shots/${info.project.name}-01-landing.png`, fullPage: true });
+  await page.screenshot({ path: `e2e-shots/${info.project.name}-01-landing.png`, fullPage: true });
   await page.getByRole("link", { name: "Start practising free" }).click();
   await expect(page).toHaveURL(/\/signin$/);
   expect(errors).toEqual([]);
@@ -25,7 +25,7 @@ test("sign-in page: Google button and graceful message when the provider is not 
   await expect(page.getByRole("heading", { name: "Welcome to Skillora" })).toBeVisible();
   const btn = page.getByRole("button", { name: "Continue with Google" });
   await expect(btn).toBeVisible();
-  await page.screenshot({ path: `test-results/shots/${info.project.name}-02-signin.png` });
+  await page.screenshot({ path: `e2e-shots/${info.project.name}-02-signin.png` });
   const settings = await request.get(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! } });
   const googleOn = (await settings.json()).external?.google === true;
   if (googleOn) { test.info().annotations.push({ type: "note", description: "Google provider is enabled: not clicking through to accounts.google.com" }); return; }
@@ -53,7 +53,7 @@ test("legal pages are public and show the current version", async ({ page }) => 
 test("signed-out page", async ({ page }, info) => {
   await go(page, "/signed-out");
   await expect(page.getByRole("heading", { name: "You have been signed out" })).toBeVisible();
-  await page.screenshot({ path: `test-results/shots/${info.project.name}-04-signed-out.png` });
+  await page.screenshot({ path: `e2e-shots/${info.project.name}-04-signed-out.png` });
   await expect(page.getByRole("link", { name: "Sign in again" })).toBeVisible();
 });
 

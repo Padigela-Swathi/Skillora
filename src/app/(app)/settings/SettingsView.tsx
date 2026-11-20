@@ -54,8 +54,8 @@ export function SettingsView({ userId, email, profile }: { userId: string; email
       <form onSubmit={save} noValidate className="flex flex-col gap-[18px] rounded-lg border border-line bg-white p-5 md:p-8">
         <h2 className="text-lg font-semibold">Profile</h2>
         <div className="flex flex-wrap gap-4">
-          <div className="flex-[1_1_240px]"><Field label="Full name" error={errors.full_name}>{(p) => <input id={p.id} aria-describedby={p.describedBy} aria-invalid={p.invalid} value={name} onChange={(e) => { setName(e.target.value); dirty(); }} maxLength={100} className={fieldClass(errors.full_name)} />}</Field></div>
-          <div className="flex-[1_1_240px]"><Field label="College" error={errors.college}>{(p) => <input id={p.id} aria-describedby={p.describedBy} aria-invalid={p.invalid} value={college} onChange={(e) => { setCollege(e.target.value); dirty(); }} maxLength={150} className={fieldClass(errors.college)} />}</Field></div>
+          <div className="flex-[1_1_240px]"><Field label="Full name" bare error={errors.full_name}>{(p) => <input id={p.id} aria-describedby={p.describedBy} aria-invalid={p.invalid} value={name} onChange={(e) => { setName(e.target.value); dirty(); }} maxLength={100} className={fieldClass(errors.full_name)} />}</Field></div>
+          <div className="flex-[1_1_240px]"><Field label="College" bare error={errors.college}>{(p) => <input id={p.id} aria-describedby={p.describedBy} aria-invalid={p.invalid} value={college} onChange={(e) => { setCollege(e.target.value); dirty(); }} maxLength={150} className={fieldClass(errors.college)} />}</Field></div>
         </div>
         <div className="flex flex-wrap gap-5">
           <div className="flex flex-col gap-1.5"><span className="text-[13px] font-medium">Branch</span><Segmented label="Branch" options={BRANCHES} value={(branch as (typeof BRANCHES)[number]) ?? null} onChange={(v) => { setBranch(v); dirty(); }} /></div>

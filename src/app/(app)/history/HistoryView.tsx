@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
 import { LinkButton } from "@/components/ui";
-import { ROUND_INFO, ROUND_ORDER } from "@/lib/content";
+import { ROUND_INFO } from "@/lib/content";
 import { band, cx, fmtDate } from "@/lib/format";
 import type { Round } from "@shared/config";
 
@@ -29,7 +29,7 @@ export function HistoryView({ rows }: { rows: Row[] }) {
   const avg = Math.round(rows.reduce((a, r) => a + r.score, 0) / rows.length);
   const first = chrono[0].score, lastScore = chrono[chrono.length - 1].score, delta = lastScore - first;
   const pts = chrono.slice(-12).map((r, i, a) => `${a.length === 1 ? 150 : Math.round((i / (a.length - 1)) * 300)},${Math.round(74 - (r.score / 100) * 68)}`).join(" ");
-  const byRound = ROUND_ORDER.map((id) => { const rs = rows.filter((r) => r.round === id); return { id, n: rs.length, avg: rs.length ? Math.round(rs.reduce((a, r) => a + r.score, 0) / rs.length) : null }; });
+  const byRound = (["tech", "hr", "code", "mgr"] as Round[]).map((id) => { const rs = rows.filter((r) => r.round === id); return { id, n: rs.length, avg: rs.length ? Math.round(rs.reduce((a, r) => a + r.score, 0) / rs.length) : null }; });
   const shown = rows.filter((r) => filter === "all" || r.round === filter);
 
   return (
@@ -48,7 +48,7 @@ export function HistoryView({ rows }: { rows: Row[] }) {
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-teal-600">Average by round</span>
           {byRound.map((a) => (
             <div key={a.id} className="flex flex-col gap-[5px]">
-              <div className="flex justify-between text-sm"><span className="font-medium">{ROUND_INFO[a.id].name}</span><span className="font-bold">{a.avg === null ? "Not tried yet" : `${a.avg} · ${band(a.avg).name}`}</span></div>
+              <div className="flex justify-between text-sm"><span className="font-medium">{ROUND_INFO[a.id].name}</span><span className="font-bold">{a.avg === null ? "Not tried yet" : <>{a.avg} / 100<span className="sr-only"> · {band(a.avg).name}</span></>}</span></div>
               <div className="h-2 overflow-hidden rounded-full bg-neutral-100"><div className="h-full rounded-full" style={{ width: `${a.avg ?? 0}%`, background: a.avg === null ? "transparent" : band(a.avg).fill }} /></div>
             </div>
           ))}

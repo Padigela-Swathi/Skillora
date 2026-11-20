@@ -20,7 +20,7 @@ export interface AiConfig {
 
 export const DEFAULT_MODEL = "google/gemma-4-31b-it";
 /** Comma-separated chain tried in order after the primary. (gemma-3-* are listed by NVIDIA but 404 on chat; verified 2026-11-20.) */
-export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,minimaxai/minimax-m3.1-flash";
+export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,stepfun-ai/step-5-preview,nvidia/nemotron-3.5-bolt-e4b";
 const DEFAULT_BASE = "https://integrate.api.nvidia.com/v1";
 
 /** Pull a JSON value out of a model reply (handles ```json fences and chatter around the object). */

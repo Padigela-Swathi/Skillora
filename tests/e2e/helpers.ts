@@ -1,3 +1,5 @@
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
 import { createServerClient } from "@supabase/ssr";
 import type { BrowserContext, Page } from "@playwright/test";
 
@@ -43,4 +45,19 @@ export async function go(page: Page, url: string) {
   const res = await page.goto(url);
   await page.locator("html[data-hydrated]").waitFor({ state: "attached" });
   return res;
+}
+
+/** Access token of a test user (for direct REST/Edge Function calls). */
+export async function userJwt(who: "a" | "b", baseURL: string) {
+  const value = (await sessionCookies(USERS[who], baseURL)).map((c) => c.value).join("");
+  return JSON.parse(Buffer.from(value.replace(/^base64-/, ""), "base64url").toString()).access_token as string;
+}
+
+/** Automated WCAG 2.1 A/AA scan (axe-core). Serious/critical violations fail; lesser ones are listed in the report annotations. */
+export async function scanA11y(page: Page, name: string) {
+  const res = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const summary = res.violations.map((v) => `${v.impact}: ${v.id} (${v.nodes.length}) e.g. ${v.nodes[0]?.target?.join(" ")}`);
+  if (summary.length) test.info().annotations.push({ type: `axe ${name}`, description: summary.join(" | ") });
+  const blocking = res.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(blocking.map((v) => `${name} -> ${v.id}: ${v.help} :: ${v.nodes.slice(0, 2).map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 }

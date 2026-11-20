@@ -1,0 +1,10 @@
+# Netlify build configuration. Next.js 16 is detected automatically and deployed with Netlify's OpenNext runtime.
+# Environment variables (Site settings -> Environment variables): see .env.example. Only NEXT_PUBLIC_* values are needed here.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Security headers (CSP, HSTS, frame-ancestors, ...) are set by next.config.ts so they apply to every route and to local `next start` too.

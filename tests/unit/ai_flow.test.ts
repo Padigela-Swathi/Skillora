@@ -25,7 +25,7 @@ describe("generateInterview", () => {
   const coding = { title: "Double it", statement: "Read an integer and print twice its value.", input_format: "one integer", output_format: "one integer", test_inputs: ["1", "2", "3", "4", "5", "6"], reference_solution_python: "print(int(input())*2)" };
   const spokenQs = (n: number) => ({ questions: Array.from({ length: n }, (_, i) => ({ text: `Explain concept number ${i + 1} in detail please?`, topic: `t${i}` })) });
 
-  function aiFor(handler: (body: any) => unknown) {
+  function aiFor(handler: (body: { messages: { content: string }[] }) => unknown) {
     return { apiKey: "k", fetch: async (_u: string, init?: RequestInit) => ok(handler(JSON.parse(String(init!.body)))) };
   }
 

@@ -74,13 +74,15 @@ try { new (require("vm").Script)(src, { filename: "main.js" }); console.log("OK"
 catch (e) { console.log(String(e && e.stack ? e.stack : e).split("\\n").slice(0, 4).join("\\n")); process.exit(1); }
 `;
 
+interface Judge0Response { status?: { id: number }; stdout?: string | null; stderr?: string | null; compile_output?: string | null; message?: string | null; time?: string | number | null }
+
 export class Judge0Runner implements Runner {
   readonly name = "judge0";
   constructor(private baseUrl = "https://ce.judge0.com", private authToken?: string, private f: FetchLike = fetch) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
   }
 
-  private async submit(body: Record<string, unknown>): Promise<Record<string, any>> {
+  private async submit(body: Record<string, unknown>): Promise<Judge0Response> {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (this.authToken) headers["X-Auth-Token"] = this.authToken;
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -92,12 +94,12 @@ export class Judge0Runner implements Runner {
         throw new RunnerError(`judge0 http ${res.status}`);
       }
       if (!res.ok) throw new RunnerError(`judge0 http ${res.status}`, false);
-      return await res.json();
+      return await res.json() as Judge0Response;
     }
     throw new RunnerError("judge0 unavailable");
   }
 
-  private map(d: Record<string, any>, ms: number | null): RunResult {
+  private map(d: Judge0Response, ms: number | null): RunResult {
     const id: number = d.status?.id ?? 13;
     const status: RunStatus = id === 3 ? "ok" : id === 5 ? "timeout" : id === 6 ? "compile_error" : id === 13 || id === 14 ? "internal_error" : "runtime_error";
     return {

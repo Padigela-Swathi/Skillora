@@ -7,7 +7,7 @@ const reply = (content: string | null, status = 200) =>
   new Response(JSON.stringify(status === 200 ? { choices: [{ message: { content } }] } : { error: "x" }), { status });
 
 function fakeFetch(responses: (Response | Error)[]) {
-  const calls: { body: any }[] = [];
+  const calls: { body: { model: string; response_format?: unknown; messages: { content: string }[] } }[] = [];
   const f = async (_url: string, init?: RequestInit) => {
     calls.push({ body: JSON.parse(String(init?.body)) });
     const r = responses.shift();
@@ -42,7 +42,7 @@ describe("chatJson", () => {
   it("repairs once when the first reply fails schema validation", async () => {
     const { f, calls } = fakeFetch([reply('{"ok":"yes"}'), reply('{"ok":true,"n":1}')]);
     expect(await chatJson({ apiKey: "k", fetch: f }, req)).toEqual({ ok: true, n: 1 });
-    expect(calls[1].body.messages.at(-1).content).toContain("invalid");
+    expect(calls[1].body.messages.at(-1)!.content).toContain("invalid");
   });
   it("falls back to the secondary model when the primary is end-of-life (410)", async () => {
     const { f, calls } = fakeFetch([reply(null, 410), reply('{"ok":true,"n":9}')]);

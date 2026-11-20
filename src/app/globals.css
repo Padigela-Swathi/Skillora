@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* Skillora design tokens (final handoff: design-system/tokens.css). Brand: Deep Teal, Butter Cream, Saffron, Brick Red, Oxblood. */
+@theme {
+  --font-sans: var(--font-inter), Inter, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-teal-50: #F1F6F7; --color-teal-100: #E3ECEE; --color-teal-200: #C3D5DA; --color-teal-300: #93B2BA; --color-teal-400: #5F8994;
+  --color-teal-500: #44707C; --color-teal-600: #335C67; --color-teal-700: #2A4C55; --color-teal-800: #213C43; --color-teal-900: #1C3238; --color-teal-950: #14262B;
+  --color-saffron-50: #FFF8EC; --color-saffron-100: #FBEBD3; --color-saffron-200: #F5D6A6; --color-saffron-300: #EDBD74; --color-saffron-400: #E09F3E;
+  --color-saffron-500: #C98428; --color-saffron-600: #A86B1C; --color-saffron-700: #8A5A12; --color-saffron-800: #6A440D; --color-saffron-900: #4A2F09;
+  --color-brick-50: #FCF2F1; --color-brick-100: #F8E6E4; --color-brick-200: #EDC3C1; --color-brick-300: #DA8E8C; --color-brick-400: #C25453;
+  --color-brick-500: #9E2A2B; --color-brick-600: #82211F; --color-brick-700: #6A1616; --color-brick-800: #540B0E; --color-brick-900: #3A0709;
+  --color-cream-50: #FFFCF3; --color-cream-100: #FFFBEA; --color-cream-200: #FFF3B0; --color-cream-300: #F7E48A;
+  --color-neutral-50: #FAF8F2; --color-neutral-100: #F3F0E6; --color-neutral-200: #ECE6D3; --color-neutral-300: #D9D3C0; --color-neutral-400: #A3ABA8;
+  --color-neutral-500: #6B7B80; --color-neutral-600: #5B6B70; --color-neutral-700: #3E5157; --color-neutral-800: #2B3D42; --color-neutral-900: #1C3238;
+  --color-oxblood: #540B0E;
+  --color-page: #FFFCF3;
+  --color-ink: #1C3238; --color-ink-2: #3E5157; --color-ink-3: #5B6B70;
+  --color-line: #ECE6D3; --color-line-input: #D9D3C0;
+
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --shadow-1: 0 1px 2px rgba(28,50,56,0.06), 0 2px 8px rgba(28,50,56,0.06);
+  --shadow-2: 0 4px 16px rgba(28,50,56,0.10);
+  --shadow-3: 0 12px 40px rgba(28,50,56,0.18);
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--color-page); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--color-teal-600); outline-offset: 2px; }
+.on-dark :focus-visible { outline-color: var(--color-saffron-400); }
+@layer base {
+  button:not(:disabled), [role="radio"], [role="tab"], select, label[for], summary { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  input, select, textarea { font-family: inherit; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes caret { 50% { opacity: 0; } }
+@keyframes bars { 0%,100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
+.spin { animation: spin 0.9s linear infinite; }
+.caret { animation: caret 1s steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .spin, .caret { animation: none; }
+  * { transition-duration: 0ms !important; }
+}

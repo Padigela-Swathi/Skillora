@@ -24,15 +24,15 @@ describe("Judge0Runner", () => {
     expect((await r.run({ language: "python", source: "x", stdin: "" })).status).toBe("runtime_error");
   });
   it("sends language ids, base64 payload, limits and the auth token", async () => {
-    let seen: any; let url = ""; let headers: any;
-    const r = new Judge0Runner("https://judge.example/", "tok", async (u, init) => { url = u; headers = init!.headers; seen = JSON.parse(String(init!.body)); return j0(3); });
+    let seen: Record<string, unknown> = {}; let url = ""; let headers: Record<string, string> = {};
+    const r = new Judge0Runner("https://judge.example/", "tok", async (u, init) => { url = u; headers = init!.headers as Record<string, string>; seen = JSON.parse(String(init!.body)); return j0(3); });
     await r.run({ language: "java", source: "class Main{}", stdin: "5" });
     expect(url).toBe("https://judge.example/submissions?base64_encoded=true&wait=true");
-    expect(seen.language_id).toBe(91); expect(fromB64(seen.stdin)).toBe("5"); expect(seen.cpu_time_limit).toBeLessThanOrEqual(5);
+    expect(seen.language_id).toBe(91); expect(fromB64(seen.stdin as string)).toBe("5"); expect(seen.cpu_time_limit as number).toBeLessThanOrEqual(5);
     expect(headers["X-Auth-Token"]).toBe("tok");
   });
   it("compile(): C uses -fsyntax-only and treats a missing binary as success", async () => {
-    let body: any;
+    let body: Record<string, unknown> = {};
     const r = new Judge0Runner("https://x", undefined, async (_u, init) => { body = JSON.parse(String(init!.body)); return j0(11, { stderr: toB64("No such file") }); });
     expect(await r.compile({ language: "c", source: "int main(){}" })).toMatchObject({ ok: true });
     expect(body.compiler_options).toBe("-fsyntax-only");
@@ -40,10 +40,10 @@ describe("Judge0Runner", () => {
   it("compile(): reports compiler output on error and uses a harness for Python", async () => {
     const r1 = new Judge0Runner("https://x", undefined, async () => j0(6, { compile_output: toB64("main.c:1: error") }));
     expect(await r1.compile({ language: "cpp", source: "x" })).toEqual({ ok: false, output: "main.c:1: error", provider: "judge0" });
-    let body: any;
+    let body: Record<string, unknown> = {};
     const r2 = new Judge0Runner("https://x", undefined, async (_u, init) => { body = JSON.parse(String(init!.body)); return j0(3, { stdout: toB64("SyntaxError: invalid syntax (line 1)\n") }); });
     const c = await r2.compile({ language: "python", source: "def (" });
-    expect(c.ok).toBe(false); expect(fromB64(body.stdin)).toBe("def (");
+    expect(c.ok).toBe(false); expect(fromB64(body.stdin as string)).toBe("def (");
   });
   it("retries on 429 then throws a retryable RunnerError", async () => {
     let n = 0;
@@ -65,7 +65,7 @@ describe("FailoverRunner / Wandbox", () => {
     await expect(new FailoverRunner([down, down]).run({ language: "c", source: "", stdin: "" })).rejects.toBeInstanceOf(RunnerError);
   });
   it("Wandbox: strips `public` from class Main for Java and maps compile errors", async () => {
-    let sent: any;
+    let sent: Record<string, unknown> = {};
     const wb = new WandboxRunner("https://w", async (_u, init) => { sent = JSON.parse(String(init!.body)); return new Response(JSON.stringify({ status: "1", compiler_error: "prog.java:1: error", program_output: "", program_error: "" })); });
     const r = await wb.run({ language: "java", source: "public class Main {}", stdin: "" });
     expect(sent.code).toBe("class Main {}"); expect(r.status).toBe("compile_error");

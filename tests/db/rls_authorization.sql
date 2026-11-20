@@ -48,6 +48,17 @@ begin
   perform pg_temp.chk('profile name copied from Google metadata', (select full_name from public.profiles where id = a) = 'User A');
 
   -- ── anon ──
+  -- privilege matrix: Edge Functions (service_role) must work; clients must not have more than intended
+  perform pg_temp.chk('service_role can read/write every table the Edge Functions use',
+    (select bool_and(has_table_privilege('service_role', 'public.' || t, 'select') and has_table_privilege('service_role', 'public.' || t, 'insert') and has_table_privilege('service_role', 'public.' || t, 'update'))
+       from unnest(array['profiles','interviews','interview_questions','question_private','code_runs','feedback_ratings']) t));
+  perform pg_temp.chk('anon has NO privilege on any app table',
+    (select bool_and(not has_any_column_privilege('anon', 'public.' || t, 'select,insert,update,references'))
+       from unnest(array['profiles','interviews','interview_questions','question_private','code_runs','feedback_ratings']) t));
+  perform pg_temp.chk('authenticated has no insert/delete on interview data tables',
+    (select bool_and(not has_table_privilege('authenticated', 'public.' || t, 'insert') and not has_table_privilege('authenticated', 'public.' || t, 'delete'))
+       from unnest(array['profiles','interviews','interview_questions','question_private','code_runs']) t));
+
   perform pg_temp.chk('anon cannot select profiles',   pg_temp.try('select * from public.profiles','anon') like 'ERR:42501%');
   perform pg_temp.chk('anon cannot select interviews', pg_temp.try('select * from public.interviews','anon') like 'ERR:42501%');
   perform pg_temp.chk('anon cannot select questions',  pg_temp.try('select * from public.interview_questions','anon') like 'ERR:42501%');

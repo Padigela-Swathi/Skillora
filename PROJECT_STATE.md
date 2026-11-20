@@ -1,23 +1,26 @@
 # Project state (checkpoint)
 
-Branch `buildtheory/sharp-darwin-enkg5v` (nothing committed yet — commits need the user's go-ahead). Supabase project `kqqkowftmlysomzlzzta`.
+Branch `buildtheory/sharp-darwin-enkg5v`. Supabase project `kqqkowftmlysomzlzzta`. Last commit pushed: 90fe5fc (Phase 0/1 backend). Everything since (frontend, E2E, migration 003) is UNCOMMITTED.
 
-## Done & verified
-- Phase 0 docs: PROJECT_SPEC, ARCHITECTURE, DECISIONS, IMPLEMENTATION_PLAN (FEATURE_MATRIX still to write).
-- Phase 1 DB: migrations `20261120000001_core_schema.sql`, `…0002_functions.sql` applied to the project. `tests/db/rls_authorization.sql` = 63/63 pass against the real DB. Advisors: only intended INFO/WARN (question_private has no policy by design; SECURITY DEFINER RPCs are intentionally executable by `authenticated`).
-- Shared Edge libs in `supabase/functions/_shared` (config, nvidia, prompts, runner, interview_gen, evaluate, http, auth, scoring, starters, hash). Unit tests 42/42 (`npx vitest run tests/unit`). Live tests (`NODE_USE_ENV_PROXY=1 LIVE_TESTS=1 npx vitest run tests/live`): Judge0 + Wandbox all 5 languages run/compile/timeout OK; NVIDIA live generation (incl. verified hidden tests), evaluation, injection resistance, model fallback chain OK.
-- Edge Functions deployed: `delete-account`, `run-code` (smoke-tested: 401 without token / non-user JWT).
-
-## Findings to remember
-- `google/gemma-3-*` 404 on NVIDIA chat; `meta/llama-3.3-70b` EOL (410). Default `google/gemma-4-31b-it`, fallbacks `poolside/laguna-xs-2.1,minimaxai/minimax-m3.1-flash`.
-- A SUPABASE_SERVICE_ROLE_KEY in the sandbox env belongs to ANOTHER project (ixgxtngx…) — never use.
+## Verified
+- DB: migrations 001-003 applied; `tests/db/rls_authorization.sql` 63/63 (+3 privilege checks run ad hoc).
+- Edge Functions deployed + exercised over real HTTP with real JWTs: run-code (5 languages, real Judge0), start-interview (terms/profile gating, validation, AI_NOT_CONFIGURED w/o consuming allowance), evaluate-interview (ownership, state, error recorded), delete-account.
+- Unit 42/42; live NVIDIA + Judge0/Wandbox tests pass.
+- Next.js app: tsc, eslint (0), `next build` pass (16 routes).
+- Playwright desktop: 19/21 passed in the last full run; the 2 failures were fixture hygiene (rating already stored; onboarding test typed an age the input truncates) — test fixed, fixtures need reset.
 
 ## BLOCKED right now
-- Supabase MCP `execute_sql` asked the user to confirm a statement containing `delete from auth.users` (seed of e2e test users, `tests/e2e/seed.sql`) and timed out unanswered. Do not retry until the user replies.
+`execute_sql` asked the user to confirm `delete from public.feedback_ratings where interview_id in (...0010, ...0015)` (test fixtures only) and timed out. Do not retry until the user replies. It is needed to make the rating E2E re-runnable.
 
-## Not yet done
-- Deploy `start-interview`, `evaluate-interview` (code written in supabase/functions; needs NVIDIA_API_KEY secret to run end-to-end).
-- Seed e2e users, E2E-test `run-code` with a real JWT.
-- Phase 2/3: Next.js app (src/ is empty), assets copy, all screens, integration.
-- Phase 4: Playwright, screenshots vs handoff, security docs, DATABASE/SECURITY/TEST_REPORT/DEPLOYMENT/HANDOFF/README, `.env.example`, FEATURE_MATRIX.
-- Manual items for the founders: Google OAuth provider + redirect URLs, `NVIDIA_API_KEY` secret, legal contact email.
+## Next actions
+1. After approval: delete the 1 stored test rating, re-run full Playwright on desktop, then mobile (reset live fixtures first: tests/e2e/reset-live.sql; user C already rewound).
+2. Compare remaining screenshots with handoff PNGs (terms, details, practice, device, tips, feedback, history, settings, mobile set).
+3. Phase 4 docs: FEATURE_MATRIX, DATABASE, SECURITY, TEST_REPORT, DEPLOYMENT (netlify.toml), HANDOFF, README. Update DECISIONS (fallback model chain, Google disabled, email provider enabled risk).
+4. Request NVIDIA_API_KEY secret via create_edge_function_secret (user enters value in dashboard) at the very end and, if given, run live start-interview/evaluate E2E.
+5. Cleanup test users/fixtures at the end (needs deletes -> user confirmation).
+
+## Manual items for the founders
+Enable Google provider + OAuth client + redirect URLs; set NVIDIA_API_KEY secret; disable Email signups in production (anyone with the anon key can otherwise create email accounts, bypassing "Google only" and multiplying AI usage); legal contact email + legal review; note Chrome's Web Speech API sends audio to Google (privacy text).
+
+## Local tooling notes
+Server: `<scratchpad>/restart.sh build` (kills stale next-server by PID; `pkill` does not match it). Tests need `NODE_USE_ENV_PROXY=1`; .env.local (gitignored) holds public Supabase URL/anon key, E2E_* vars.

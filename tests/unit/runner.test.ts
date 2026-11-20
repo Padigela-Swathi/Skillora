@@ -45,6 +45,12 @@ describe("Judge0Runner", () => {
     const c = await r2.compile({ language: "python", source: "def (" });
     expect(c.ok).toBe(false); expect(fromB64(body.stdin as string)).toBe("def (");
   });
+  it("retries a dropped connection quickly instead of failing over", async () => {
+    let n = 0;
+    const r = new Judge0Runner("https://x", undefined, async () => { if (n++ === 0) throw new TypeError("fetch failed"); return j0(3, { stdout: toB64("ok\n") }); });
+    expect((await r.run({ language: "python", source: "print('ok')", stdin: "" })).stdout).toBe("ok\n");
+    expect(n).toBe(2);
+  });
   it("retries on 429 then throws a retryable RunnerError", async () => {
     let n = 0;
     const r = new Judge0Runner("https://x", undefined, async () => { n++; return new Response("busy", { status: 429 }); });

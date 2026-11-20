@@ -16,11 +16,13 @@ export interface AiConfig {
   fetch?: FetchLike;
   /** per-request timeout in ms */
   timeoutMs?: number;
+  /** total time budget for one chatJson call across all retries and models (Edge Functions are limited to ~150 s) */
+  deadlineMs?: number;
 }
 
 export const DEFAULT_MODEL = "google/gemma-4-31b-it";
 /** Comma-separated chain tried in order after the primary. (gemma-3-* are listed by NVIDIA but 404 on chat; verified 2026-11-20.) */
-export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,stepfun-ai/step-5-preview,nvidia/nemotron-3.5-bolt-e4b";
+export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,nvidia/nemotron-3.5-bolt-e4b";
 const DEFAULT_BASE = "https://integrate.api.nvidia.com/v1";
 
 /** Pull a JSON value out of a model reply (handles ```json fences and chatter around the object). */
@@ -70,12 +72,16 @@ export async function chatJson<S extends z.ZodTypeAny>(cfg: AiConfig, req: JsonR
   const models = [cfg.model || DEFAULT_MODEL, ...(cfg.fallbackModel || DEFAULT_FALLBACK_MODELS).split(",").map((m) => m.trim())]
     .filter((m, i, a) => m && a.indexOf(m) === i);
   let lastProblem = "unknown";
+  const started = Date.now();
+  const budget = cfg.deadlineMs ?? 100_000;
+  const left = () => budget - (Date.now() - started);
 
   for (const model of models) {
     const messages: ChatMsg[] = [{ role: "system", content: req.system }, { role: "user", content: req.user }];
     let jsonMode = true;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const r = await callOnce(cfg, model, messages, req.maxTokens ?? 3000, req.temperature ?? 0.4, jsonMode);
+      if (left() < 4000) { lastProblem = `time budget exhausted (${lastProblem})`; break; }
+      const r = await callOnce({ ...cfg, timeoutMs: Math.min(cfg.timeoutMs ?? 80000, left()) }, model, messages, req.maxTokens ?? 3000, req.temperature ?? 0.4, jsonMode);
       if (r.status === 410 || r.status === 404) { lastProblem = `model ${model} unavailable (${r.status})`; break; }   // end-of-life: next model
       if (r.status === 401 || r.status === 403) throw new AiError("AI_NOT_CONFIGURED", `NVIDIA API rejected the key (${r.status})`);
       if (r.status === 400 && jsonMode) { jsonMode = false; continue; }                                                // model without JSON mode
@@ -95,6 +101,6 @@ export async function chatJson<S extends z.ZodTypeAny>(cfg: AiConfig, req: JsonR
       messages.push({ role: "user", content: `Your previous reply was invalid (${lastProblem}). Reply again with ONLY the corrected JSON object, no commentary.` });
     }
   }
-  const unavailable = /NVIDIA API|unavailable|aborted|network|fetch/i.test(lastProblem);
+  const unavailable = /NVIDIA API|unavailable|aborted|network|fetch|budget/i.test(lastProblem);
   throw new AiError(unavailable ? "AI_UNAVAILABLE" : "AI_BAD_OUTPUT", lastProblem);
 }

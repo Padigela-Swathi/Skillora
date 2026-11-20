@@ -8,10 +8,11 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 |---|---|---|
 | Types | `npx tsc --noEmit` (strict) | pass |
 | Lint | `npx eslint .` | 0 problems |
-| Unit | `npx vitest run tests/unit` | **42 / 42** |
+| Unit | `npx vitest run tests/unit` | **44 / 44** |
 | DB authorisation | `tests/db/rls_authorization.sql` | **63 / 63** on the final schema before the privilege checks were added; the 3 privilege-matrix checks passed ad hoc (service_role ok, anon none, authenticated no insert/delete). A re-run of the full 66-check script was requested but the Supabase tool was waiting on a confirmation prompt: see "Not re-run" |
-| Live runner | `npm run test:live` (runner file) | all 5 languages × run / compile-ok / compile-error / timeout / runtime-error on **both** Judge0 and Wandbox |
-| Live AI | `npm run test:live` (ai file) | JSON round-trip, HR questions, **full Coding-round interview** (real AI + real sandbox verification of hidden tests), evaluation (canonical sub-scores, mean computed in code), **prompt-injection** (scored < 60), dead-model fallback (410 and 404), each model of the fallback chain |
+| Live (full suite, clean run) | `npm run test:live` | **34 / 34** (after the fixes below) |
+| Live runner | (runner file) | all 5 languages × run / compile-ok / compile-error / timeout / runtime-error on **both** Judge0 and Wandbox |
+| Live AI | (ai file) | JSON round-trip, HR questions, **full Coding-round interview** (real AI + real sandbox verification of hidden tests), evaluation (canonical sub-scores, mean computed in code), **prompt-injection** (scored < 60), dead-model fallback (410 and 404), each model of the fallback chain |
 | Dependencies | `npm audit` | 0 vulnerabilities |
 | Build | `npx next build` | pass, 16 routes |
 | E2E (Playwright) | desktop 1440×900 + mobile 390×844 | last full passes: desktop 22/22, mobile 22/22 (1 deliberate no-op on desktop: account deletion runs in the mobile pass); later re-run of the 4 fixture-independent specs: 41/42 (see below) |
@@ -32,7 +33,9 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 | 7 | Avatar link's accessible name lacked its visible text (WCAG 2.5.3) | name now includes initials | E a11y.spec |
 | 8 | Stranded interviews had no way back | resume / "get my feedback" banner on Practice | E app.spec |
 | 9 | Privacy copy omitted third-party processing (NVIDIA, sandboxes, Chrome STT) | added section 5 | review |
-| 10 | Lint: state set in effects, `any` types, client-only helper used in server component | render-phase reset, typed fixtures, moved `buttonClass` | `eslint .` |
+| 10 | Judge0 client failed over on a single dropped connection (`fetch failed`) | quick retry before failover | U runner |
+| 11 | `step-5-preview` fallback stalled >2 min; no global AI time budget | removed from chain; `chatJson` 100 s budget | U nvidia (budget test), L |
+| 12 | Lint: state set in effects, `any` types, client-only helper used in server component | render-phase reset, typed fixtures, moved `buttonClass` | `eslint .` |
 
 ## Not verified / limitations (honest list)
 - **Google OAuth round-trip**: provider is not enabled in the project; sessions were tested with password users created for tests.
@@ -42,8 +45,8 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 - **Visual fidelity**: compared side-by-side with the handoff PNGs by eye (landing, practice, device check, interview room, coding, feedback, history, settings, mobile set). No pixel-diff tool was used, so "pixel-perfect" is **not** claimed.
 - Screen-reader (NVDA/VoiceOver) testing, Safari/Firefox, load/performance and real-device mobile testing were not done.
 - Public Judge0/Wandbox/NVIDIA free tiers have no guaranteed capacity; observed latency of a 4-test run was ~8 s (first call ~33 s).
-- Deployed Edge Function code was last deployed before two small repo changes (Wandbox Java timeout; fallback model chain). Redeploy from the repo (DEPLOYMENT.md §1.2) to pick them up; the chain can also be overridden with the `NVIDIA_FALLBACK_MODEL` secret without redeploying.
-- The full live suite flakes only when a free NVIDIA model returns 429/529; the client retries and falls back.
+- Deployed Edge Function code was last deployed before four small repo changes (Wandbox Java timeout, Judge0 connection retry, fallback model chain, AI time budget). Redeploy from the repo (DEPLOYMENT.md §1.2) to pick them up; the chain can also be overridden with the `NVIDIA_FALLBACK_MODEL` secret without redeploying.
+- Free NVIDIA models sometimes return 429/529 or stall; the client retries, falls back and gives up after 100 s with `AI_UNAVAILABLE`. Live tests of single named models can therefore fail transiently.
 
 ## Not re-run (blocked at the time of writing)
 The Supabase tool asked for confirmation of a statement and the prompt timed out, so after the last code changes these were **not** re-run: the full 66-check DB script, the mobile `a11y` interview-room scan and a fresh desktop/mobile `interview.spec` run (fixtures need `tests/e2e/reset-live.sql`). Their last results before the changes were all passing and none of the changes touch those code paths.

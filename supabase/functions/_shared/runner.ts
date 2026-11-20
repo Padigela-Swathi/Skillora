@@ -86,9 +86,16 @@ export class Judge0Runner implements Runner {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (this.authToken) headers["X-Auth-Token"] = this.authToken;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const res = await fetchWithTimeout(this.f, `${this.baseUrl}/submissions?base64_encoded=true&wait=true`, {
-        method: "POST", headers, body: JSON.stringify(body),
-      }, 25000);
+      let res: Response;
+      try {
+        res = await fetchWithTimeout(this.f, `${this.baseUrl}/submissions?base64_encoded=true&wait=true`, {
+          method: "POST", headers, body: JSON.stringify(body),
+        }, 25000);
+      } catch (e) {
+        // a dropped connection is retried quickly; a 25 s timeout is not (the failover runner takes over)
+        if (e instanceof RunnerError && !e.message.endsWith("timeout") && attempt < 2) { await new Promise((r) => setTimeout(r, 400 * (attempt + 1))); continue; }
+        throw e;
+      }
       if (res.status === 429 || res.status >= 500) {
         if (attempt < 2) { await new Promise((r) => setTimeout(r, 600 * (attempt + 1))); continue; }
         throw new RunnerError(`judge0 http ${res.status}`);

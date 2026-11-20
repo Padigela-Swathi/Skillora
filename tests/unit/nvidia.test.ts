@@ -71,4 +71,10 @@ describe("chatJson", () => {
     const { f } = fakeFetch(Array.from({ length: 30 }, () => reply(null)));
     await expect(chatJson({ apiKey: "k", fetch: f }, req)).rejects.toMatchObject({ code: "AI_BAD_OUTPUT" });
   });
+  it("stops retrying when the total time budget is spent (Edge Function limit)", async () => {
+    const { f, calls } = fakeFetch(Array.from({ length: 30 }, () => reply(null, 503)));
+    const e = await chatJson({ apiKey: "k", fetch: f, deadlineMs: 3000 }, req).catch((x) => x);
+    expect(e.code).toBe("AI_UNAVAILABLE");
+    expect(calls.length).toBeLessThan(3);   // would be 9 (3 models x 3 attempts) without the budget
+  }, 20000);
 });

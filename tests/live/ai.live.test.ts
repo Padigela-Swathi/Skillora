@@ -30,7 +30,7 @@ live("real NVIDIA API", () => {
     expect(r.ok).toBe(true);
   });
 
-  for (const model of ["google/gemma-4-31b-it", "poolside/laguna-xs-2.1", "stepfun-ai/step-5-preview", "nvidia/nemotron-3.5-bolt-e4b"]) {
+  for (const model of ["google/gemma-4-31b-it", "poolside/laguna-xs-2.1", "nvidia/nemotron-3.5-bolt-e4b"]) {
     it(`every model in the default chain can produce valid HR questions: ${model}`, async () => {
       const p = spokenPrompt({ round: "mgr", level: "Medium", count: 3, student });
       const r = await chatJson({ ...ai, model, fallbackModel: model }, { system: p.system, user: p.user, schema: p.schema, maxTokens: 4000 });

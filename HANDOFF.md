@@ -8,8 +8,8 @@ Every mandatory requirement is implemented and, except for three items, verified
 1. **NVIDIA key** → Supabase Dashboard → Edge Functions → Secrets → add `NVIDIA_API_KEY` (from build.nvidia.com). *(I could not set it: the value must never pass through me.)* Then try a 5-min HR interview.
 2. **Google sign-in** → Google Cloud Console: create an OAuth client (Web) with redirect URI `https://kqqkowftmlysomzlzzta.supabase.co/auth/v1/callback`; paste client ID/secret into Supabase → Authentication → Providers → Google → enable.
 3. **URL configuration** → Authentication → URL Configuration: Site URL = your Netlify URL; add `https://<your-site>/auth/callback` and `http://localhost:3000/auth/callback` to Redirect URLs.
-4. **Disable Email sign-ups** (Authentication → Providers → Email), otherwise anyone can bypass "Google only" and multiply AI usage (SECURITY.md #1). Optional: CAPTCHA.
-5. **Redeploy the Edge Functions from this repo** (`supabase functions deploy start-interview run-code evaluate-interview delete-account`) so the project runs exactly this commit (four robustness fixes landed after the last deploy: Wandbox Java timeout, Judge0 connection retry, NVIDIA fallback chain, 100 s AI time budget).
+4. **Turn the Email provider OFF** (Authentication → Sign In / Providers → Email) once Google sign-in works, otherwise anyone can bypass "Google only" and multiply AI usage (SECURITY.md #1). This also disables the local `/dev-login`. Optional: CAPTCHA.
+5. **Edge Functions**: the dev project (`kqqkowftmlysomzlzzta`) already runs version 2 of `start-interview`, `run-code` and `evaluate-interview` (= this repo). For any **other** Supabase project deploy them yourself: `supabase functions deploy start-interview run-code evaluate-interview delete-account`.
 6. **Set `ALLOWED_ORIGINS`** secret to your site origin.
 7. **Netlify**: connect the repo; env vars `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`; deploy.
 

@@ -15,7 +15,7 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 | Live AI | (ai file) | JSON round-trip, HR questions, **full Coding-round interview** (real AI + real sandbox verification of hidden tests), evaluation (canonical sub-scores, mean computed in code), **prompt-injection** (scored < 60), dead-model fallback (410 and 404), each model of the fallback chain |
 | Dependencies | `npm audit` | 0 vulnerabilities |
 | Build | `npx next build` | pass, 16 routes |
-| E2E (Playwright) | desktop 1440×900 + mobile 390×844 | last full passes: desktop 22/22, mobile 22/22 (1 deliberate no-op on desktop: account deletion runs in the mobile pass); later re-run of the 4 fixture-independent specs: 41/42 (see below) |
+| E2E (Playwright) | desktop 1440×900 + mobile 390×844 | final runs after the last code and Edge Function deploy: **desktop 26/26** (accessibility, interview incl. real coding runs through deployed `run-code` v2, app, public, security, dev-login 404; onboarding passed in the earlier full run) and **mobile 26/26**; earlier full passes were 22/22 per viewport |
 | Accessibility | axe-core WCAG 2.1 A/AA on every screen + keyboard/focus tests | 0 serious/critical violations (1 real finding fixed: avatar label) |
 
 ## What the E2E suite covers (real browser → real Next server → real Supabase/Edge Functions)
@@ -45,11 +45,12 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 - **Visual fidelity**: compared side-by-side with the handoff PNGs by eye (landing, practice, device check, interview room, coding, feedback, history, settings, mobile set). No pixel-diff tool was used, so "pixel-perfect" is **not** claimed.
 - Screen-reader (NVDA/VoiceOver) testing, Safari/Firefox, load/performance and real-device mobile testing were not done.
 - Public Judge0/Wandbox/NVIDIA free tiers have no guaranteed capacity; observed latency of a 4-test run was ~8 s (first call ~33 s).
-- Deployed Edge Function code was last deployed before four small repo changes (Wandbox Java timeout, Judge0 connection retry, fallback model chain, AI time budget). Redeploy from the repo (DEPLOYMENT.md §1.2) to pick them up; the chain can also be overridden with the `NVIDIA_FALLBACK_MODEL` secret without redeploying.
+- The deployed Edge Functions were redeployed (version 2) after the last code change, so the dev project runs the repo code; the model chain can also be overridden with the `NVIDIA_FALLBACK_MODEL` secret without redeploying.
 - Free NVIDIA models sometimes return 429/529 or stall; the client retries, falls back and gives up after 100 s with `AI_UNAVAILABLE`. Live tests of single named models can therefore fail transiently.
 
-## Not re-run (blocked at the time of writing)
-The Supabase tool asked for confirmation of a statement and the prompt timed out, so after the last code changes these were **not** re-run: the full 66-check DB script, the mobile `a11y` interview-room scan and a fresh desktop/mobile `interview.spec` run (fixtures need `tests/e2e/reset-live.sql`). Their last results before the changes were all passing and none of the changes touch those code paths.
+## Not re-run
+The full 66-check DB script was not re-run after adding the 3 privilege-matrix checks: the Supabase tool asks for confirmation on SQL containing `delete` and the prompt timed out. The earlier 63/63 run and the ad hoc privilege query both passed. Paste `tests/db/rls_authorization.sql` into the Supabase SQL editor to run it.
+A browser-only gotcha when reproducing in a proxied sandbox: if the proxy port changes, `E2E_PROXY` goes stale and every browser call to Supabase fails with `ERR_PROXY_CONNECTION_FAILED` (looks like app failures; it is not).
 
 ## How to reproduce
 ```bash

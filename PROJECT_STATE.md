@@ -4,7 +4,7 @@ Branch `buildtheory/sharp-darwin-enkg5v`, Supabase project `kqqkowftmlysomzlzzta
 Phases 0-4 complete; status = IMPLEMENTED WITH DOCUMENTED LIMITATIONS (see HANDOFF.md, TEST_REPORT.md).
 
 ## Remaining (needs the user or a Supabase confirmation prompt)
-- Supabase `execute_sql` was waiting on a confirmation (it flags statements containing `delete`); until answered: re-run the 66-check DB suite, reset E2E fixtures (tests/e2e/reset-live.sql), re-run mobile a11y interview-room + both interview specs.
+- Re-run the 66-check DB suite in the SQL editor (the Supabase tool prompts on `delete`). E2E fixtures/specs were re-run: desktop 26/26, mobile 26/26. Edge Functions are redeployed (v2).
 - NVIDIA_API_KEY secret, Google OAuth, disable Email signups, redeploy Edge Functions from repo, Netlify env (HANDOFF.md checklist).
 - After the secret exists: run the deployed start-interview/evaluate-interview success path (open an interview, finish it, see the report) - the only unverified product path.
 

@@ -30,7 +30,7 @@ Secrets (`NVIDIA_API_KEY`, `JUDGE0_AUTH_TOKEN`, service-role key) exist **only**
 - WARN leaked-password protection disabled: only relevant to email/password accounts; moot once Email signups are disabled (below).
 
 ## Risks and actions that are yours
-1. **Disable Email signups** (Dashboard → Authentication → Providers → Email). Today anyone with the public key can create email accounts, bypassing "Google only"; each account gets 3 AI interviews/day, so unlimited accounts = unbounded AI spend. (Needed for the E2E suite only in a separate dev project.) Consider also enabling CAPTCHA / limiting sign-ups to a college email domain if abuse appears.
+1. **Turn the Email provider OFF** (Dashboard → Authentication → Sign In / Providers → Email → disable). Today anyone with the public key can create email accounts, bypassing "Google only"; each account gets 3 AI interviews/day, so unlimited accounts = unbounded AI spend. Supabase has no "email sign-ups only" switch: the global "Allow new users to sign up" would also block new Google users, so the whole Email provider must go. This also disables `/dev-login` and the password users used by the E2E suite, so keep it ON only in a separate dev/test project. Consider CAPTCHA or a college-domain restriction if abuse appears.
 2. **Third-party data flows** (now disclosed in the privacy draft, needs legal review): answers + code → NVIDIA; code → Judge0/Wandbox public sandboxes; Chrome speech recognition → Google. Self-host Judge0 (`JUDGE0_URL`) if code must stay private.
 3. **Public sandboxes have no SLA.** Failover to Wandbox is automatic; heavy traffic needs a self-hosted Judge0.
 4. **CORS** on Edge Functions is `*` by default (bearer tokens, no cookies); set `ALLOWED_ORIGINS` to your site origin in production.

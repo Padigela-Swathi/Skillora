@@ -14,7 +14,7 @@ Next.js 16 (App Router, server components, `proxy.ts`) deploys on Netlify with i
    - `ALLOWED_ORIGINS` *(recommended)* – e.g. `https://skillora.netlify.app`.
 4. **Google sign-in** – Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web). Authorised redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`. Put the client ID/secret into Supabase → Authentication → Providers → Google, enable it.
 5. **URL configuration** (Authentication → URL Configuration): Site URL = your Netlify URL; Redirect URLs: `https://<site>/auth/callback` and `http://localhost:3000/auth/callback`.
-6. **Hardening** – disable the Email provider's sign-ups (see SECURITY.md #1). Optionally enable CAPTCHA.
+6. **Hardening** – turn the **Email provider off** (Authentication → Sign In / Providers → Email; see SECURITY.md #1). `/dev-login` and password test users stop working, which is intended for production. Optionally enable CAPTCHA.
 7. **Legal** – set `NEXT_PUBLIC_CONTACT_EMAIL`, have the Terms/Privacy copy reviewed; when it changes, bump `TERMS_VERSION` in `supabase/functions/_shared/config.ts` **and redeploy `start-interview`** (it also checks the version) so users re-accept.
 
 ## 2. Netlify
@@ -28,7 +28,7 @@ Site settings → Environment variables:
 - [ ] Coding round: Compile and Run work (proves the sandbox path from your Supabase region)
 - [ ] Finish → feedback report arrives; rate it; History lists it
 - [ ] Settings → delete a test account removes it
-- [ ] Supabase Advisors show no new warnings; Email sign-ups disabled
+- [ ] Supabase Advisors show no new warnings; Email provider turned off
 - [ ] Remove test data: `delete from auth.users where email like '%@skillora-test.invalid';` (and `%@skillora-dbtest.invalid`)
 
 ## 4. Rollback

@@ -37,9 +37,22 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 | 11 | `step-5-preview` fallback stalled >2 min; no global AI time budget | removed from chain; `chatJson` 100 s budget | U nvidia (budget test), L |
 | 12 | Lint: state set in effects, `any` types, client-only helper used in server component | render-phase reset, typed fixtures, moved `buttonClass` | `eslint .` |
 
+## Live AI run on the deployed project (2026-11-21, manual, real HTTP with a real user token)
+| Step | Result |
+|---|---|
+| `start-interview` HR / Easy / 5 min | 200 in 8.2 s; 3 spoken questions tailored to an IT 3rd-year student |
+| answer 2, skip 1, `finish_interview`, `evaluate-interview` | completed, score 82 (sub-scores 85/82/90/80/75 → mean 82.4); first run took **101 s** |
+| Root cause of the 101 s | the primary model (`gemma-4-31b-it`) normally answers in ~25 s but sometimes stalls; an 80 s per-call timeout let a stall consume the budget before failing over |
+| Fix | evaluation calls now time out at 55 s and fail over to the fast fallback; `evaluate-interview` redeployed |
+| `start-interview` Coding / Easy / 5 min | 200 in 32 s: 1 spoken + 2 AI-written coding problems; 6 sandbox-verified tests each; starters for 5 languages; public JSON contains no expected outputs |
+| `run-code` on the AI problems | wrong solution 2/6, correct 6/6 and 6/6 (judge0); no hidden-test data in responses |
+| answer all 3, finish, `evaluate-interview` | **24.7 s**, score 93 (Correctness 100 = consistent with 12/12 tests) |
+| UI | the real report renders on desktop and mobile (`tests/e2e/live-ai.spec.ts`, axe clean) |
+Per-model evaluation latency measured by `tests/live/timing.live.test.ts`: gemma-4-31b 25 s, laguna 9 s, nemotron-bolt 4.7 s.
+
 ## Not verified / limitations (honest list)
 - **Google OAuth round-trip**: provider is not enabled in the project; sessions were tested with password users created for tests.
-- **Deployed `start-interview` / `evaluate-interview` against NVIDIA**: `NVIDIA_API_KEY` is not set as an Edge Function secret, so these functions return `AI_NOT_CONFIGURED` (verified, and verified not to consume the daily allowance). The same prompts/clients were verified live in `tests/live`, but the **success write-back of a generated interview and of an evaluation through the deployed functions has not run**.
+- ~~Deployed AI functions~~ **now verified** (2026-11-21, after the NVIDIA key was added): see "Live AI run on the deployed project" below.
 - **Voice**: the Web Speech API cannot run headless; typed answers are verified, dictation and interviewer TTS are not.
 - **Real camera/microphone hardware**: only Chromium's fake devices.
 - **Visual fidelity**: compared side-by-side with the handoff PNGs by eye (landing, practice, device check, interview room, coding, feedback, history, settings, mobile set). No pixel-diff tool was used, so "pixel-perfect" is **not** claimed.

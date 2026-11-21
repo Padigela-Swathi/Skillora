@@ -1,11 +1,11 @@
 # Handoff
 
 ## 1. Overall status: **IMPLEMENTED WITH DOCUMENTED LIMITATIONS**
-Every mandatory requirement is implemented and, except for three items, verified end-to-end against the real Supabase project in a real browser. The three that are **not** verified all depend on things only you can do (Google OAuth client, NVIDIA key as a Supabase secret, a real microphone). See `TEST_REPORT.md` and `FEATURE_MATRIX.md`. This is not "COMPLETE AND VERIFIED" because of them.
+Every mandatory requirement is implemented and, except for two items, verified end-to-end against the real Supabase project in a real browser. **The AI path is now verified live** (questions, coding problems with sandbox-verified tests, feedback, 82 and 93 scores) now that the NVIDIA key is set. The two items **not** verified depend on things only you can do: the Google OAuth round trip (needs your OAuth client) and voice dictation with a real microphone. See `TEST_REPORT.md` and `FEATURE_MATRIX.md`. This is not "COMPLETE AND VERIFIED" because of them.
 
 ## 2. What you must do at the end (checklist, in order)
 **A. To make the product work**
-1. **NVIDIA key** → Supabase Dashboard → Edge Functions → Secrets → add `NVIDIA_API_KEY` (from build.nvidia.com). *(I could not set it: the value must never pass through me.)* Then try a 5-min HR interview.
+1. ~~NVIDIA key~~ **done** (added in the dev project; verified live). Add the same secret in any other project.
 2. **Google sign-in** → Google Cloud Console: create an OAuth client (Web) with redirect URI `https://kqqkowftmlysomzlzzta.supabase.co/auth/v1/callback`; paste client ID/secret into Supabase → Authentication → Providers → Google → enable.
 3. **URL configuration** → Authentication → URL Configuration: Site URL = your Netlify URL; add `https://<your-site>/auth/callback` and `http://localhost:3000/auth/callback` to Redirect URLs.
 4. **Turn the Email provider OFF** (Authentication → Sign In / Providers → Email) once Google sign-in works, otherwise anyone can bypass "Google only" and multiply AI usage (SECURITY.md #1). This also disables the local `/dev-login`. Optional: CAPTCHA.

@@ -66,3 +66,8 @@ test("security headers are present", async ({ request }) => {
   expect(h["referrer-policy"]).toBeTruthy();
   expect(h["x-powered-by"]).toBeUndefined();
 });
+
+test("dev-only login does not exist in production builds", async ({ page }) => {
+  const res = await go(page, "/dev-login");
+  expect(res?.status()).toBe(404);
+});

@@ -20,6 +20,7 @@ Backend setup (migrations, Edge Functions, secrets, Google OAuth): **DEPLOYMENT.
 | `npm test` | unit tests (Vitest) |
 | `npm run test:live` | real NVIDIA + Judge0/Wandbox calls (`NVIDIA_API_KEY` or an injected key; network required) |
 | `npm run test:e2e` | Playwright, desktop 1440×900 + mobile 390×844 (needs a built app, a Supabase project and the fixtures in `tests/e2e`) |
+| `E2E_DEV=1 E2E_PORT=3200 npx playwright test room-dev.spec.ts` | regression tests against a running `npm run dev` |
 | `tests/db/rls_authorization.sql` | authorisation suite: run in the Supabase SQL editor |
 
 ## Repository map

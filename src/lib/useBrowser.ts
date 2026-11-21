@@ -1,5 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { clock } from "./clock";
 import { getRecognitionCtor } from "./speech";
 
 const noopSubscribe = () => () => {};
@@ -7,12 +8,7 @@ const noopSubscribe = () => () => {};
 /** Browser capability flags that are safe for SSR/hydration (server snapshot = true, client snapshot = real value). */
 export const useSpeechSupported = () => useSyncExternalStore(noopSubscribe, () => getRecognitionCtor() !== null, () => true);
 
-let tick = 0;
-/** Wall-clock "now" in ms that re-renders every `intervalMs`; null during SSR/hydration. */
-export function useNow(intervalMs = 1000): number | null {
-  return useSyncExternalStore(
-    (cb) => { tick = Date.now(); const t = setInterval(() => { tick = Date.now(); cb(); }, intervalMs); queueMicrotask(cb); return () => clearInterval(t); },
-    () => tick || null,
-    () => null,
-  );
+/** Wall-clock "now" in ms that re-renders every second; null during SSR/hydration. Backed by a stable shared store (see clock.ts). */
+export function useNow(): number | null {
+  return useSyncExternalStore(clock.subscribe, clock.getSnapshot, clock.getServerSnapshot);
 }

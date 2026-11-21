@@ -130,7 +130,7 @@ test("history: overall performance, trend, filters, rows open the report", async
   const p = info.project.name;
   await go(page, "/history");
   await expect(page.getByRole("heading", { name: "History", level: 1 })).toBeVisible();
-  await expect(page.getByText("across 9 interviews")).toBeVisible();
+  await expect(page.getByText(/across \d+ interviews/)).toBeVisible();   // count grows when the live-AI interview spec completes real interviews
   await expect(page.getByRole("img", { name: /Score trend/ })).toBeVisible();
   await expect(page.getByText(/Up \d+ points since your first interview/)).toBeVisible();
   await shot(page, p, "14-history");

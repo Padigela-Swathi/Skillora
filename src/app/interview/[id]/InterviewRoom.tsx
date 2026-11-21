@@ -22,7 +22,7 @@ const SOFT_LIMIT = 120;
 export function InterviewRoom({ interview, questions }: { interview: RoomInterview; questions: RoomQuestion[] }) {
   const router = useRouter();
   const [qs, setQs] = useState(questions);
-  const now = useNow(1000);
+  const now = useNow();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);

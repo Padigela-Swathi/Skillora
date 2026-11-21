@@ -35,7 +35,8 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 | 9 | Privacy copy omitted third-party processing (NVIDIA, sandboxes, Chrome STT) | added section 5 | review |
 | 10 | Judge0 client failed over on a single dropped connection (`fetch failed`) | quick retry before failover | U runner |
 | 11 | `step-5-preview` fallback stalled >2 min; no global AI time budget | removed from chain; `chatJson` 100 s budget | U nvidia (budget test), L |
-| 12 | Lint: state set in effects, `any` types, client-only helper used in server component | render-phase reset, typed fixtures, moved `buttonClass` | `eslint .` |
+| 12 | **Interview room crashed with "Maximum update depth exceeded" on `npm run dev`** (reported by the user after real Google sign-in). `useNow` passed React a new `subscribe` function every render and that function changed the clock, so each render re-subscribed and re-rendered. Hidden in the production-build tests because consecutive renders usually landed in the same millisecond; dev mode is slower so the value always changed | stable shared clock store (`src/lib/clock.ts`), `subscribe` never notifies | U `clock.test.ts` (4) + dev-server E2E `room-dev.spec.ts` (3, incl. working speech recognition and the full practice→AI start→room flow) |
+| 13 | Lint: state set in effects, `any` types, client-only helper used in server component | render-phase reset, typed fixtures, moved `buttonClass` | `eslint .` |
 
 ## Live AI run on the deployed project (2026-11-21, manual, real HTTP with a real user token)
 | Step | Result |
@@ -49,6 +50,8 @@ Nothing here is mocked except the unit tests (which use injected fakes on purpos
 | answer all 3, finish, `evaluate-interview` | **24.7 s**, score 93 (Correctness 100 = consistent with 12/12 tests) |
 | UI | the real report renders on desktop and mobile (`tests/e2e/live-ai.spec.ts`, axe clean) |
 Per-model evaluation latency measured by `tests/live/timing.live.test.ts`: gemma-4-31b 25 s, laguna 9 s, nemotron-bolt 4.7 s.
+
+**Why the tests missed it:** the E2E suite runs against `next start` (production). Timing-dependent render loops can behave differently on a slower dev server. `room-dev.spec.ts` therefore targets a running `npm run dev` (`E2E_DEV=1 E2E_PORT=3200`).
 
 ## Not verified / limitations (honest list)
 - **Google OAuth round-trip**: provider is not enabled in the project; sessions were tested with password users created for tests.

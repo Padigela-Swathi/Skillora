@@ -9,7 +9,7 @@ Next.js 16 (App Router, server components, `proxy.ts`) deploys on Netlify with i
    `supabase functions deploy start-interview run-code evaluate-interview delete-account` (JWT verification stays **on**).
 3. **Secrets** (Dashboard → Edge Functions → Secrets):
    - `NVIDIA_API_KEY` *(required)* – key from build.nvidia.com. Free-tier rate limits apply.
-   - `NVIDIA_MODEL` / `NVIDIA_FALLBACK_MODEL` *(optional)* – defaults `google/gemma-4-31b-it` and `poolside/laguna-xs-2.1,nvidia/nemotron-3.5-bolt-e4b`. NVIDIA retires models without notice: if AI calls start failing, list models (`GET https://integrate.api.nvidia.com/v1/models`) and update these two values; no redeploy is needed.
+   - `NVIDIA_MODEL` / `NVIDIA_FALLBACK_MODEL` *(optional)* – defaults `nvidia/nemotron-3.5-bolt-e4b` and `poolside/laguna-xs-2.1,google/gemma-4-31b-it` (fast models first). NVIDIA retires models without notice: if AI calls start failing, list models (`GET https://integrate.api.nvidia.com/v1/models`) and update these two values; no redeploy is needed.
    - `JUDGE0_URL`, `JUDGE0_AUTH_TOKEN` *(optional)* – your own Judge0 for higher limits/privacy.
    - `ALLOWED_ORIGINS` *(recommended)* – e.g. `https://skillora.netlify.app`.
 4. **Google sign-in** – Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web). Authorised redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`. Put the client ID/secret into Supabase → Authentication → Providers → Google, enable it.

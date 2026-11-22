@@ -38,7 +38,7 @@ describe("chatJson", () => {
     const out = await chatJson({ apiKey: "k", fetch: f }, req);
     expect(out).toEqual({ ok: true, n: 5 });
     expect(calls[0].body.response_format).toEqual({ type: "json_object" });
-    expect(calls[0].body.model).toBe("google/gemma-4-31b-it");
+    expect(calls[0].body.model).toBe("nvidia/nemotron-3.5-bolt-e4b");
   });
   it("repairs once when the first reply fails schema validation", async () => {
     const { f, calls } = fakeFetch([reply('{"ok":"yes"}'), reply('{"ok":true,"n":1}')]);

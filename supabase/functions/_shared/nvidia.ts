@@ -20,9 +20,11 @@ export interface AiConfig {
   deadlineMs?: number;
 }
 
-export const DEFAULT_MODEL = "google/gemma-4-31b-it";
+// Fast models first: measured 2026-11-22 on a real evaluation prompt, nemotron-bolt 7 s, laguna 10-17 s, gemma-4-31b 25 s when healthy but it stalled for 90 s+ for hours.
+// Quality of nemotron/laguna output was checked with live generation + evaluation runs (all replies valid after the built-in repair round).
+export const DEFAULT_MODEL = "nvidia/nemotron-3.5-bolt-e4b";
 /** Comma-separated chain tried in order after the primary. (gemma-3-* are listed by NVIDIA but 404 on chat; verified 2026-11-20.) */
-export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,nvidia/nemotron-3.5-bolt-e4b";
+export const DEFAULT_FALLBACK_MODELS = "poolside/laguna-xs-2.1,google/gemma-4-31b-it";
 const DEFAULT_BASE = "https://integrate.api.nvidia.com/v1";
 const DEFAULT_TIMEOUT_MS = 35_000;
 /** How long a model that stalled/overloaded is tried last (Edge Function isolates are reused, so this protects later requests). */

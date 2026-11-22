@@ -12,8 +12,8 @@ export interface EvaluationResult {
 
 export async function evaluateInterview(a: { ai: AiConfig; round: Round; level: Level; student: StudentCtx; questions: EvalQuestion[]; endedEarly: boolean }): Promise<EvaluationResult> {
   const p = evaluationPrompt({ round: a.round, level: a.level, student: a.student, questions: a.questions, endedEarly: a.endedEarly });
-  // Evaluation usually takes ~25 s on the primary model. A stalled call must fail over to the fast fallback quickly, not after 80 s.
-  const raw = await chatJson({ ...a.ai, timeoutMs: a.ai.timeoutMs ?? 55_000 }, { system: p.system, user: p.user, schema: p.schema, maxTokens: 4000, temperature: 0.3 });
+  // Evaluation takes ~7 s on the default model (~25 s on gemma). A stalled call must fail over quickly.
+  const raw = await chatJson({ ...a.ai, timeoutMs: a.ai.timeoutMs ?? 40_000 }, { system: p.system, user: p.user, schema: p.schema, maxTokens: 4000, temperature: 0.3 });
 
   // canonical sub-score names, order and clamping are decided here, not by the model
   const lower = new Map(Object.entries(raw.sub_scores).map(([k, v]) => [k.toLowerCase(), v]));

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Banner, Button, Spinner } from "@/components/ui";
 import { ApiCallError, invokeFn } from "@/lib/api";
 
@@ -9,6 +9,14 @@ export function StartButton({ round, level, dur }: { round: string; level: strin
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<ApiCallError | null>(null);
+  const [slow, setSlow] = useState(false);
+
+  // honest feedback if the AI is slow today (the server switches to a faster model after ~35 s)
+  useEffect(() => {
+    if (!busy) return;
+    const t = setTimeout(() => setSlow(true), 20_000);
+    return () => { clearTimeout(t); setSlow(false); };
+  }, [busy]);
 
   async function start() {
     setBusy(true); setErr(null);
@@ -37,6 +45,7 @@ export function StartButton({ round, level, dur }: { round: string; level: strin
           <Spinner size={44} />
           <p className="text-xl font-semibold">Preparing your interview…</p>
           <p className="max-w-sm text-[15px] text-teal-200">Riya is writing questions for you. This usually takes under a minute. Coding rounds take a little longer while we test the problems.</p>
+          {slow && <p className="max-w-sm text-[14px] text-teal-200/90">The AI is a bit slow right now. Still working, please keep this page open.</p>}
         </div>
       )}
     </>

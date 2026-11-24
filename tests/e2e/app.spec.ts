@@ -132,7 +132,7 @@ test("history: overall performance, trend, filters, rows open the report", async
   await expect(page.getByRole("heading", { name: "History", level: 1 })).toBeVisible();
   await expect(page.getByText(/across \d+ interviews/)).toBeVisible();   // count grows when the live-AI interview spec completes real interviews
   await expect(page.getByRole("img", { name: /Score trend/ })).toBeVisible();
-  await expect(page.getByText(/Up \d+ points since your first interview/)).toBeVisible();
+  await expect(page.getByText(/(Up|Down) \d+ points since your first interview/)).toBeVisible();
   await shot(page, p, "14-history");
   await page.getByRole("radio", { name: "Coding" }).click();
   await expect(page.getByRole("link", { name: /Coding Round/ })).toHaveCount(2);

@@ -58,6 +58,7 @@ Also check in the Supabase dashboard (not verifiable here): Authentication → U
 | 10 | One-off stored-XSS render test of question text, transcript, feedback, strengths/weaknesses/tips with `<img onerror>`, `<script>`, `<svg onload>` payloads (fixtures restored afterwards) | passed on desktop and mobile; payload shown as text, nothing executed |
 | 11 | Supabase logs (24 h): function logs, gateway, auth, Postgres | no tokens, keys, or transcript content |
 | 12 | `npm run check` (typecheck, eslint, 51 unit tests) | passed |
+| 13 | Full Playwright regression (desktop + mobile) after the migration | first run 48 passed / 14 failed, all traced to test-fixture state (consumed "live" interviews, expired fixture timer, one-shot user C, a hard-coded "Up N points" that real AI scores turned into "Down 13"), none to the audit changes. After resetting fixtures: 57 passed + 4 re-run (history, skip-all) passed. The assertion for the trend direction was made data-independent. **Not re-run:** the onboarding spec (needs the one-shot test user `e2e-c`, which the committed `seed.sql` does not create, and which that spec deletes) and the env-gated live-AI / dev-server specs (8 skipped). |
 
 Not run / not verified: the 66-check SQL suite `tests/db/rls_authorization.sql` (now 69 checks, three added for H-1) was **not re-run** because the SQL tool asks for confirmation on `delete` statements; paste it into the Supabase SQL editor. Dashboard-only settings listed above. A real Netlify deployment. The Google OAuth flow itself (needs a human).
 

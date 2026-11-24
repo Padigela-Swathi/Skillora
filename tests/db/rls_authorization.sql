@@ -158,6 +158,12 @@ begin
   perform pg_temp.chk('A cannot insert code_runs', pg_temp.try(format('insert into public.code_runs(user_id,interview_id,question_id,language,mode) values (%L,%L,%L,''c'',''run'')',a,ia,qa1),'authenticated',a) like 'ERR:42501%');
   perform pg_temp.chk('B cannot see A code_runs', pg_temp.q('select count(*)::text from public.code_runs','authenticated',b) = '0');
 
+  -- ── start cap: quitting immediately is free, but start->quit loops are bounded (audit 2026-11-24) ──
+  insert into public.interviews(user_id,round,level,duration_min,question_count,status,ended_at) select b,'hr','Easy',5,3,'abandoned',now() from generate_series(1,7);
+  perform pg_temp.chk('abandoned interviews are not counted in daily_usage', pg_temp.q('select public.daily_usage()->>''used''','authenticated',b) = '1');
+  perform pg_temp.chk('8 started interviews/day hard cap blocks start->quit loops', pg_temp.try(format('select public.reserve_interview(%L,''hr'',''Easy'',5::smallint,3::smallint)',b),'service_role') like 'ERR:P0001:DAILY_LIMIT%');
+  perform pg_temp.chk('reserve_interview is still service-role only', pg_temp.try(format('select public.reserve_interview(%L,''hr'',''Easy'',5::smallint,3::smallint)',b),'authenticated',b) like 'ERR:42501%');
+
   -- ── cascade on account deletion ──
   delete from auth.users where id = a;
   perform pg_temp.chk('deleting auth user cascades everywhere', (select count(*) from public.profiles where id=a)

@@ -31,7 +31,7 @@ Clients cannot write these tables; transitions happen in SECURITY DEFINER functi
 | `handle_new_user()` trigger | Auth | creates the profile row (name from Google metadata) |
 | `accept_terms(version)` | authenticated | own row only; version must match `YYYY-MM-DD` |
 | `daily_usage()` | authenticated | used/limit/reset (IST day) for `auth.uid()` |
-| `reserve_interview(...)` | **service_role only** | advisory lock per user, blocks double-click generation, enforces 3/day (failed/abandoned excluded) |
+| `reserve_interview(...)` | **service_role only** | advisory lock per user, blocks double-click generation, enforces 3 counted/day (failed/abandoned excluded) **and** a hard cap of 8 started (non-failed) and 15 total attempts per IST day, so start→quit loops cannot be used to spend AI quota |
 | `submit_answer(question, action, transcript?, lang?, code?)` | authenticated | ownership, interview `in_progress`, question `pending`, not past `duration+5 min`, non-empty answer, code only on coding questions |
 | `finish_interview(id, quit)` | authenticated | ownership; idempotent; 0 answers → `abandoned`; else `processing` (+ `ended_early`) |
 | `rating_due(id)` | authenticated | completed, unrated, and ordinal 1, 6, 11… |

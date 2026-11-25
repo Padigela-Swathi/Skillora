@@ -23,6 +23,13 @@ Site settings → Environment variables:
 
 **Secrets scanning.** Netlify scans the repo and build output for the values of variables marked "Contains secret values" (and, on supported plans, for secret-looking strings). Do **not** mark the four `NEXT_PUBLIC_*` variables as secret: they are bundled into the browser on purpose and the build would fail. No real secret belongs in Netlify (`NVIDIA_API_KEY`, the service-role key and `JUDGE0_AUTH_TOKEN` live only in Supabase). If smart detection flags the publishable Supabase key, add that value to the site variable `SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES` in the Netlify UI rather than turning scanning off; never set `SECRETS_SCAN_ENABLED=false`. (Based on Netlify's documentation; not yet exercised on a real deploy.)
 
+## 2b. Live deployment (as configured on 2026-11-25)
+- Netlify project `skillora-practice` (https://skillora-practice.netlify.app), linked to GitHub `main`: every push to `main` builds and deploys.
+- Site variables (all non-secret): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`. Variables are baked in at build time: after changing one, trigger a new deploy.
+- Visitor access: production is public; branch deploys and previews require a Netlify team login.
+- Google OAuth consent screen: needs the home page `https://skillora-practice.netlify.app/`, privacy `/legal/privacy`, terms `/legal/terms`, and `skillora-practice.netlify.app` plus the Supabase project domain as authorized domains. Only the basic scopes (openid, email, profile) are used, so no Google verification review is required.
+- Supabase: Site URL = the Netlify URL; Redirect URLs = `https://skillora-practice.netlify.app/auth/callback` and `http://localhost:3000/auth/callback`; secret `ALLOWED_ORIGINS` = the Netlify URL plus `http://localhost:3000`.
+
 ## 3. Pre-flight checklist
 - [ ] `npm run check` (types, lint, unit) and `npm run build` pass
 - [ ] Sign in with a real Google account → terms → details → practice

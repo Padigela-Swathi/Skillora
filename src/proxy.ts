@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED = ["/practice", "/interview", "/feedback", "/history", "/settings", "/onboarding"];
+const PROTECTED = ["/practice", "/interview", "/feedback", "/history", "/settings", "/onboarding", "/admin"];
 
 /** Refreshes the Supabase session cookie on every request and bounces anonymous users away from protected pages. */
 export async function proxy(request: NextRequest) {

@@ -16,6 +16,7 @@ PostgreSQL 17 on Supabase (project `kqqkowftmlysomzlzzta`, ap-south-1). Migratio
 | `interview_questions` | position, kind (spoken/coding), text, public `coding` json (statement, formats, **visible** examples, starter code), answer fields, per-question feedback | SELECT own only |
 | `question_private` | **hidden test cases** (input/expected) | none: RLS on, no policy, no grants |
 | `code_runs` | audit + rate-limit log of compile/run calls | SELECT own only |
+| `admins` | user ids allowed to open `/admin` (the reach dashboard) | none: RLS on, no policy, no grants; add rows from the SQL editor |
 | `feedback_ratings` | 1–5 stars + comment, unique per interview | SELECT own; INSERT own for own **completed** interview; no update/delete |
 
 Every row carries `user_id` → `auth.users(id) ON DELETE CASCADE`, so deleting the auth user removes all data (verified by test).
@@ -34,6 +35,8 @@ Clients cannot write these tables; transitions happen in SECURITY DEFINER functi
 | `reserve_interview(...)` | **service_role only** | advisory lock per user, blocks double-click generation, enforces 3 counted/day (failed/abandoned excluded) **and** a hard cap of 8 started (non-failed) and 15 total attempts per IST day, so start→quit loops cannot be used to spend AI quota |
 | `submit_answer(question, action, transcript?, lang?, code?)` | authenticated | ownership, interview `in_progress`, question `pending`, not past `duration+5 min`, non-empty answer, code only on coding questions |
 | `finish_interview(id, quit)` | authenticated | ownership; idempotent; 0 answers → `abandoned`; else `processing` (+ `ended_early`) |
+| `is_admin()` | authenticated | true if `auth.uid()` is listed in `admins` |
+| `admin_reach_stats()` | authenticated, **admins only** | raises `FORBIDDEN` for non-admins; returns aggregate sign-up / activity / college numbers only (no names or emails) |
 | `rating_due(id)` | authenticated | completed, unrated, and ordinal 1, 6, 11… |
 
 All functions use `SET search_path = ''` and fully-qualified names; `EXECUTE` is revoked from `PUBLIC`/`anon` and granted explicitly.

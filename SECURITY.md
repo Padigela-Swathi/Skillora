@@ -23,6 +23,7 @@ Secrets (`NVIDIA_API_KEY`, `JUDGE0_AUTH_TOKEN`, service-role key) exist **only**
 | Web | CSP (`frame-ancestors 'none'`, `connect-src` limited to the Supabase host), HSTS, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy (camera/mic self only), `poweredByHeader` off; no `dangerouslySetInnerHTML`/`eval` in `src` | E headers test, grep |
 | Dependencies | `npm audit`: 0 vulnerabilities (prod and dev) | M |
 | Storage | No buckets exist (no uploads in V1; camera/audio never stored) | M |
+| Admin page | `/admin` returns 404 unless `is_admin()`; the stats come from `admin_reach_stats()` (SECURITY DEFINER, re-checks admin, aggregates only); `admins` has no client access; no service-role key in the web app | D |
 | Account deletion | `delete-account` uses the admin API; FK cascade removes all rows | E (real deletion), D |
 
 ## Supabase advisors (final)

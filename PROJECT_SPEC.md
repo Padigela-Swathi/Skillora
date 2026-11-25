@@ -19,7 +19,7 @@ answer per question. History tracks every interview.
 ## 2. Users / roles
 | Role | Description | Capabilities |
 |---|---|---|
-| Student | Only role. Authenticated through Google (Supabase Auth). | Everything on their own data only. No admin role exists in V1. |
+| Student | Only role. Authenticated through Google (Supabase Auth). | Everything on their own data only. Optional admin (listed in `admins`) can view the aggregate reach dashboard at `/admin`; admins see no individual student data. |
 | Anonymous | Not signed in. | Landing page, legal pages only. |
 
 ## 3. Requirements

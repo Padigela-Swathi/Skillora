@@ -33,7 +33,9 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       accept_terms: { Args: { p_version: string }; Returns: undefined };
+      admin_reach_stats: { Args: Record<string, never>; Returns: Json };
       daily_usage: { Args: Record<string, never>; Returns: Json };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
       finish_interview: { Args: { p_interview_id: string; p_quit?: boolean }; Returns: Json };
       rating_due: { Args: { p_interview_id: string }; Returns: boolean };
       submit_answer: { Args: { p_question_id: string; p_action: string; p_transcript?: string; p_code_language?: string; p_code_source?: string }; Returns: Json };
